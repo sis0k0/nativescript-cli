@@ -148,7 +148,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 	}
 
 	public async validate(projectData: IProjectData): Promise<void> {
-		this.validatePackageName(projectData.projectId);
+		this.validatePackageName(projectData.projectIdentifiers.android);
 		this.validateProjectName(projectData.projectName);
 
 		this.$androidToolsInfo.validateAndroidHomeEnvVariable({ showWarningsAsErrors: true });
@@ -271,16 +271,17 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		// will replace applicationId in app/App_Resources/Android/app.gradle if it has not been edited by the user
 		const userAppGradleFilePath = path.join(projectData.appResourcesDirectoryPath, this.$devicePlatformsConstants.Android, "app.gradle");
 
+		//TODO: kddimitrov: For compatability with old templates. Once all templates are updated should delete.
 		try {
-			shell.sed('-i', /__PACKAGE__/, projectData.projectId, userAppGradleFilePath);
+			shell.sed('-i', /__PACKAGE__/, projectData.projectIdentifiers.android, userAppGradleFilePath);
 		} catch (e) {
-			this.$logger.warn(`\n${e}.\nCheck if you're using an outdated template and update it.`);
+			this.$logger.trace(`Templates updated and no need for replace in app.gradle.`);
 		}
 	}
 
 	public interpolateConfigurationFile(projectData: IProjectData, platformSpecificData: IPlatformSpecificData): void {
 		const manifestPath = this.getPlatformData(projectData).configurationFilePath;
-		shell.sed('-i', /__PACKAGE__/, projectData.projectId, manifestPath);
+		shell.sed('-i', /__PACKAGE__/, projectData.projectIdentifiers.android, manifestPath);
 		if (this.$androidToolsInfo.getToolsInfo().androidHomeEnvVar) {
 			const sdk = (platformSpecificData && platformSpecificData.sdk) || (this.$androidToolsInfo.getToolsInfo().compileSdkVersion || "").toString();
 			shell.sed('-i', /__APILEVEL__/, sdk, manifestPath);
@@ -289,8 +290,8 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 	private getProjectNameFromId(projectData: IProjectData): string {
 		let id: string;
-		if (projectData && projectData.projectId) {
-			const idParts = projectData.projectId.split(".");
+		if (projectData && projectData.projectIdentifiers && projectData.projectIdentifiers.android) {
+			const idParts = projectData.projectIdentifiers.android.split(".");
 			id = idParts[idParts.length - 1];
 		}
 
@@ -444,7 +445,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 			const filesForInterpolation = this.$fs.enumerateFilesInDirectorySync(resourcesDestinationDirectoryPath, file => this.$fs.getFsStats(file).isDirectory() || path.extname(file) === constants.XML_FILE_EXTENSION) || [];
 			for (const file of filesForInterpolation) {
 				this.$logger.trace(`Interpolate data for plugin file: ${file}`);
-				await this.$pluginVariablesService.interpolate(pluginData, file, projectData);
+				await this.$pluginVariablesService.interpolate(pluginData, file, projectData.projectDir, projectData.projectIdentifiers.android);
 			}
 		}
 
@@ -551,7 +552,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 	public async cleanDeviceTempFolder(deviceIdentifier: string, projectData: IProjectData): Promise<void> {
 		const adb = this.$injector.resolve(DeviceAndroidDebugBridge, { identifier: deviceIdentifier });
-		const deviceRootPath = `/data/local/tmp/${projectData.projectId}`;
+		const deviceRootPath = `/data/local/tmp/${projectData.projectIdentifiers.android}`;
 		await adb.executeShellCommand(["rm", "-rf", deviceRootPath]);
 	}
 
