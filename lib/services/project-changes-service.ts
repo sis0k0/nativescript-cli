@@ -81,7 +81,7 @@ export class ProjectChangesService implements IProjectChangesService {
 				]);
 			} else {
 				this._changesInfo.configChanged = this.filesChanged([
-					path.join(platformResourcesDir, platformData.configurationFileName),
+					path.join(platformResourcesDir, "src", "main", platformData.configurationFileName),
 					path.join(platformResourcesDir, "app.gradle")
 				]);
 			}

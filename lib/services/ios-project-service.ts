@@ -123,6 +123,12 @@ export class IOSProjectService extends projectServiceBaseLib.PlatformProjectServ
 		return path.join(this.getPlatformData(projectData).projectRoot, projectData.projectName, "Resources");
 	}
 
+	public getAppResourcesSourceDirectoryPath(projectRoot: string): string {
+		const resourcesPath: string[] = [projectRoot, constants.APP_RESOURCES_FOLDER_NAME, this.$devicePlatformsConstants.iOS];
+		
+		return path.join(...resourcesPath);
+	}
+
 	public async validate(): Promise<void> {
 		if (!this.$hostInfo.isDarwin) {
 			return;

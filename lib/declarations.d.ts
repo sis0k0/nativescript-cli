@@ -432,6 +432,11 @@ interface IInfoService {
 	printComponentsInfo(): Promise<void>;
 }
 
+interface IProjectV4MigrationService {
+	shouldMigrate(versionString: string, applicationRoot: string): boolean;
+	migrate(applicationRoot: string): Promise<void>;
+}
+
 /**
  * Describes properties needed for uploading a package to iTunes Connect
  */

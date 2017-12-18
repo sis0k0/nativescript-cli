@@ -242,10 +242,16 @@ interface IPlatformProjectService extends NodeJS.EventEmitter {
 	beforePrepareAllPlugins(projectData: IProjectData, dependencies?: IDependencyData[]): Promise<void>;
 
 	/**
-	 * Gets the path wheren App_Resources should be copied.
+	 * Gets the path where App_Resources should be copied.
 	 * @returns {string} Path to native project, where App_Resources should be copied.
 	 */
 	getAppResourcesDestinationDirectoryPath(projectData: IProjectData): string;
+
+	/**
+	 * Gets the path where App_Resources are copied from.
+	 * @returns {string} Path to the root of the project where App_Resources can be found.
+	 */
+	getAppResourcesSourceDirectoryPath(projectRoot: string): string;
 
 	cleanDeviceTempFolder(deviceIdentifier: string, projectData: IProjectData): Promise<void>;
 	processConfigurationFilesFromAppResources(release: boolean, projectData: IProjectData): Promise<void>;

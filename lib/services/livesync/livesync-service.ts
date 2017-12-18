@@ -525,6 +525,8 @@ export class LiveSyncService extends EventEmitter implements IDebugLiveSyncServi
 			}
 		}
 
+		pattern.push(projectData.appResourcesDirectoryPath);
+
 		const currentWatcherInfo = this.liveSyncProcessesInfo[liveSyncData.projectDir].watcherInfo;
 
 		if (!currentWatcherInfo || currentWatcherInfo.pattern !== pattern) {

@@ -88,6 +88,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 					return [
 						`${packageName}-${buildMode}.apk`,
+						`app-${buildMode}.apk`,
 						`${projectData.projectName}-${buildMode}.apk`,
 						`${projectData.projectName}.apk`
 					];
@@ -118,7 +119,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 	public getAppResourcesDestinationDirectoryPath(projectData: IProjectData, frameworkVersion?: string): string {
 		if (this.canUseGradle(projectData, frameworkVersion)) {
-			const resourcePath: string[] = [constants.SRC_DIR, constants.MAIN_DIR, constants.RESOURCES_DIR];
+			const resourcePath: string[] = [constants.SRC_DIR];
 			if (this.isAndroidStudioTemplate) {
 				resourcePath.unshift(constants.APP_FOLDER_NAME);
 			}
@@ -128,6 +129,12 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		}
 
 		return path.join(this.getPlatformData(projectData).projectRoot, constants.RESOURCES_DIR);
+	}
+
+	public getAppResourcesSourceDirectoryPath(projectRoot: string, frameworkVersion?: string): string {
+		const resourcesPath: string[] = [projectRoot, constants.APP_RESOURCES_FOLDER_NAME, this.$devicePlatformsConstants.Android, "src", "main"];
+
+		return path.join(...resourcesPath);
 	}
 
 	public async validate(projectData: IProjectData): Promise<void> {
@@ -244,7 +251,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		// Interpolate the apilevel and package
 		this.interpolateConfigurationFile(projectData, platformSpecificData);
 
-		const stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), 'values', 'strings.xml');
+		const stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), "main", "res", 'values', 'strings.xml');
 		shell.sed('-i', /__NAME__/, projectData.projectName, stringsFilePath);
 		shell.sed('-i', /__TITLE_ACTIVITY__/, projectData.projectName, stringsFilePath);
 
@@ -323,7 +330,9 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 					buildOptions,
 					{ stdio: buildConfig.buildOutputStdio || "inherit" },
 					{ emitOptions: { eventName: constants.BUILD_OUTPUT_EVENT_NAME }, throwError: true }));
-		} else {
+		}
+		// todo: pete: remove this check, ant-based projects havent been actual for 2 years now. 
+		else {
 			this.$errors.failWithoutHelp("Cannot complete build because this project is ANT-based." + EOL +
 				"Run `tns platform remove android && tns platform add android` to switch to Gradle and try again.");
 		}
@@ -374,25 +383,11 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 	}
 
 	public ensureConfigurationFileInAppResources(projectData: IProjectData): void {
-		const originalAndroidManifestFilePath = path.join(projectData.appResourcesDirectoryPath, this.$devicePlatformsConstants.Android, this.getPlatformData(projectData).configurationFileName);
-
-		const manifestExists = this.$fs.exists(originalAndroidManifestFilePath);
-
-		if (!manifestExists) {
-			this.$logger.warn('No manifest found in ' + originalAndroidManifestFilePath);
-			return;
-		}
-		// Overwrite the AndroidManifest from runtime.
-		this.$fs.copyFile(originalAndroidManifestFilePath, this.getPlatformData(projectData).configurationFilePath);
+		// Intentionally left empty.
 	}
 
 	public prepareAppResources(appResourcesDirectoryPath: string, projectData: IProjectData): void {
-		const resourcesDirPath = path.join(appResourcesDirectoryPath, this.getPlatformData(projectData).normalizedPlatformName);
-		const valuesDirRegExp = /^values/;
-		const resourcesDirs = this.$fs.readDirectory(resourcesDirPath).filter(resDir => !resDir.match(valuesDirRegExp));
-		_.each(resourcesDirs, resourceDir => {
-			this.$fs.deleteDirectory(path.join(this.getAppResourcesDestinationDirectoryPath(projectData), resourceDir));
-		});
+		// Intentionally left empty.
 	}
 
 	public async preparePluginNativeCode(pluginData: IPluginData, projectData: IProjectData): Promise<void> {
@@ -409,6 +404,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 	}
 
 	private async processResourcesFromPlugin(pluginData: IPluginData, pluginPlatformsFolderPath: string, projectData: IProjectData): Promise<void> {
+		// todo: pete: move this logic behind a flag, checking if the runtime version is < 4.0.0
 		const configurationsDirectoryPath = path.join(this.getPlatformData(projectData).projectRoot, "configurations");
 		this.$fs.ensureDirectoryExists(configurationsDirectoryPath);
 

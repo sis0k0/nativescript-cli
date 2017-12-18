@@ -40,7 +40,8 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		private $npm: INodePackageManager,
 		private $devicePlatformsConstants: Mobile.IDevicePlatformsConstants,
 		private $projectChangesService: IProjectChangesService,
-		private $analyticsService: IAnalyticsService) {
+		private $analyticsService: IAnalyticsService,
+		private $projectV4MigrationService: IProjectV4MigrationService) {
 		super();
 	}
 
@@ -94,6 +95,17 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 
 		if (version === undefined) {
 			version = this.getCurrentPlatformVersion(platform, projectData);
+		}
+
+		let appDirectoryPath = projectData.projectDir;
+		let migrationVersion = version;
+		if (version === 'next' || version === 'rc' || version === 'latest') {
+			migrationVersion = '4.0.0'; // anything 4.0.0 and higher is alright
+		}
+
+		const normalizedPlatformVersion = `${semver.major(migrationVersion)}.${semver.minor(migrationVersion)}.0`;
+		if (this.$projectV4MigrationService.shouldMigrate(normalizedPlatformVersion, appDirectoryPath)) {
+			await this.$projectV4MigrationService.migrate(appDirectoryPath);
 		}
 
 		// Log the values for project

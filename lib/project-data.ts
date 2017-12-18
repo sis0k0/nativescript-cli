@@ -69,7 +69,7 @@ export class ProjectData implements IProjectData {
 					this.platformsDir = path.join(projectDir, constants.PLATFORMS_DIR_NAME);
 					this.projectFilePath = projectFilePath;
 					this.appDirectoryPath = path.join(projectDir, constants.APP_FOLDER_NAME);
-					this.appResourcesDirectoryPath = path.join(projectDir, constants.APP_FOLDER_NAME, constants.APP_RESOURCES_FOLDER_NAME);
+					this.appResourcesDirectoryPath = path.join(projectDir, constants.APP_RESOURCES_FOLDER_NAME);
 					this.projectId = data.id;
 					this.dependencies = fileContent.dependencies;
 					this.devDependencies = fileContent.devDependencies;
