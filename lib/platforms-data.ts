@@ -24,6 +24,10 @@ export class PlatformsData implements IPlatformsData {
 		return platformData;
 	}
 
+	public getPlatformProjectService(platformKey: string): IPlatformProjectService {
+		return this.platformsData[platformKey].getPlatformProjectService();
+	}
+
 	public get availablePlatforms(): any {
 		return {
 			iOS: "ios",

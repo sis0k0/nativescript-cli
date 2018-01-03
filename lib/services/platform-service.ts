@@ -97,17 +97,6 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 			version = this.getCurrentPlatformVersion(platform, projectData);
 		}
 
-		let appDirectoryPath = projectData.projectDir;
-		let migrationVersion = version;
-		if (version === 'next' || version === 'rc' || version === 'latest') {
-			migrationVersion = '4.0.0'; // anything 4.0.0 and higher is alright
-		}
-
-		const normalizedPlatformVersion = `${semver.major(migrationVersion)}.${semver.minor(migrationVersion)}.0`;
-		if (this.$projectV4MigrationService.shouldMigrate(normalizedPlatformVersion, appDirectoryPath)) {
-			await this.$projectV4MigrationService.migrate(appDirectoryPath);
-		}
-
 		// Log the values for project
 		this.$logger.trace("Creating NativeScript project for the %s platform", platform);
 		this.$logger.trace("Path: %s", platformData.projectRoot);
@@ -136,7 +125,23 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 			const downloadedPackagePath = await this.$npmInstallationManager.install(packageToInstall, projectDir, npmOptions);
 			let frameworkDir = path.join(downloadedPackagePath, constants.PROJECT_FRAMEWORK_FOLDER_NAME);
 			frameworkDir = path.resolve(frameworkDir);
+			const frameworkJsonContent = this.$fs.readJson(path.join(downloadedPackagePath, constants.PACKAGE_JSON_FILE_NAME));
+			if (frameworkJsonContent && frameworkJsonContent.version) {
+				version = frameworkJsonContent.version;
+			}
+			
+			let appDirectoryPath = projectData.projectDir;
 
+			let migrationVersion = version;
+			if (version === 'next' || version === 'rc' || version === 'latest') {
+				migrationVersion = '4.0.0'; // anything 4.0.0 and higher is alright
+			}
+	
+			const normalizedPlatformVersion = `${semver.major(migrationVersion)}.${semver.minor(migrationVersion)}.0`;
+			if (this.$projectV4MigrationService.shouldMigrate(normalizedPlatformVersion, appDirectoryPath)) {
+				await this.$projectV4MigrationService.migrate(appDirectoryPath);
+			}
+	
 			const coreModuleName = await this.addPlatformCore(platformData, frameworkDir, platformTemplate, projectData, config, nativePrepare);
 			await this.$npm.uninstall(coreModuleName, { save: true }, projectData.projectDir);
 		} catch (err) {
@@ -668,9 +673,9 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		}
 
 		platform = platform.split("@")[0].toLowerCase();
-
-		if (!this.isValidPlatform(platform, projectData)) {
-			this.$errors.fail("Invalid platform %s. Valid platforms are %s.", platform, helpers.formatListOfNames(this.$platformsData.platformsNames));
+		
+		if (constants.PlatformConsts.indexOf(platform)) {
+			this.$errors.fail("Invalid platform %s. Valid platforms are %s.", platform, helpers.formatListOfNames(constants.PlatformConsts));
 		}
 	}
 
@@ -700,10 +705,6 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 
 	private isPlatformInstalled(platform: string, projectData: IProjectData): boolean {
 		return this.$fs.exists(path.join(projectData.platformsDir, platform.toLowerCase()));
-	}
-
-	private isValidPlatform(platform: string, projectData: IProjectData) {
-		return this.$platformsData.getPlatformData(platform, projectData);
 	}
 
 	public isPlatformSupportedForOS(platform: string, projectData: IProjectData): boolean {

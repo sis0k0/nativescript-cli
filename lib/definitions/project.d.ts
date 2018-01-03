@@ -170,6 +170,7 @@ interface ILocalBuildService {
 }
 
 interface IPlatformProjectService extends NodeJS.EventEmitter {
+	getPlatformProjectService(): IPlatformProjectService;
 	getPlatformData(projectData: IProjectData): IPlatformData;
 	validate(projectData: IProjectData): Promise<void>;
 	createProject(frameworkDir: string, frameworkVersion: string, projectData: IProjectData, config: ICreateProjectOptions): Promise<void>;

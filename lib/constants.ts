@@ -29,6 +29,8 @@ export const OUTPUTS_DIR = "outputs";
 export const APK_DIR = "apk";
 export const RESOURCES_DIR = "res";
 
+export const PlatformConsts: string[] = ["android", "ios"];
+
 export class PackageVersion {
 	static NEXT = "next";
 	static LATEST = "latest";

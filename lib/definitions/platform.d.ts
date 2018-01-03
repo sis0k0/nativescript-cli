@@ -264,6 +264,7 @@ interface IPlatformData {
 interface IPlatformsData {
 	availablePlatforms: any;
 	platformsNames: string[];
+	getPlatformProjectService(platform: string): IPlatformProjectService;
 	getPlatformData(platform: string, projectData: IProjectData): IPlatformData;
 }
 

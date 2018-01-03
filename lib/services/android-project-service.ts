@@ -60,11 +60,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 			}
 			appDestinationDirectoryArr.push(constants.SRC_DIR, constants.MAIN_DIR, constants.ASSETS_DIR);
 
-			const configurationsDirectoryArr = [projectRoot];
-			if (this.isAndroidStudioTemplate) {
-				configurationsDirectoryArr.push(constants.APP_FOLDER_NAME);
-			}
-			configurationsDirectoryArr.push(constants.SRC_DIR, constants.MAIN_DIR, constants.MANIFEST_FILE_NAME);
+			const configurationsDirectoryArr = [projectData.appResourcesDirectoryPath, "Android", constants.SRC_DIR, constants.MAIN_DIR, constants.MANIFEST_FILE_NAME];
 
 			const deviceBuildOutputArr = [projectRoot];
 			if (this.isAndroidStudioTemplate) {
@@ -103,6 +99,10 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		}
 
 		return this._platformData;
+	}
+
+	public getPlatformProjectService(): IPlatformProjectService {
+		return this;
 	}
 
 	// TODO: Remove prior to the 4.0 CLI release @Pip3r4o @PanayotCankov
@@ -251,7 +251,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		// Interpolate the apilevel and package
 		this.interpolateConfigurationFile(projectData, platformSpecificData);
 
-		const stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), "main", "res", 'values', 'strings.xml');
+		const stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), "src", "main", "res", 'values', 'strings.xml');
 		shell.sed('-i', /__NAME__/, projectData.projectName, stringsFilePath);
 		shell.sed('-i', /__TITLE_ACTIVITY__/, projectData.projectName, stringsFilePath);
 

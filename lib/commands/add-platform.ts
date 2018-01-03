@@ -20,9 +20,8 @@ export class AddPlatformCommand implements ICommand {
 
 		for (const arg of args) {
 			this.$platformService.validatePlatform(arg, this.$projectData);
-			const platformData = this.$platformsData.getPlatformData(arg, this.$projectData);
-			const platformProjectService = platformData.platformProjectService;
-			await platformProjectService.validate(this.$projectData);
+			const platformProjectService = this.$platformsData.getPlatformProjectService(arg.split("@")[0].toLowerCase());
+			await platformProjectService.validate(this.$projectData); 
 		}
 
 		return true;

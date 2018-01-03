@@ -93,6 +93,10 @@ export class IOSProjectService extends projectServiceBaseLib.PlatformProjectServ
 		return this._platformData;
 	}
 
+	public getPlatformProjectService(): IPlatformProjectService {
+		return this;
+	}
+
 	public async validateOptions(projectId: string, provision: true | string, teamId: true | string): Promise<boolean> {
 		if (provision && teamId) {
 			this.$errors.failWithoutHelp("The options --provision and --teamId are mutually exclusive.");
