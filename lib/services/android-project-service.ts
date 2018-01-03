@@ -119,7 +119,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 	public getAppResourcesDestinationDirectoryPath(projectData: IProjectData, frameworkVersion?: string): string {
 		if (this.canUseGradle(projectData, frameworkVersion)) {
-			const resourcePath: string[] = [constants.SRC_DIR];
+			const resourcePath: string[] = [/* constants.SRC_DIR */];
 			if (this.isAndroidStudioTemplate) {
 				resourcePath.unshift(constants.APP_FOLDER_NAME);
 			}
@@ -132,7 +132,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 	}
 
 	public getAppResourcesSourceDirectoryPath(projectRoot: string, frameworkVersion?: string): string {
-		const resourcesPath: string[] = [projectRoot, constants.APP_RESOURCES_FOLDER_NAME, this.$devicePlatformsConstants.Android, "src", "main"];
+		const resourcesPath: string[] = [projectRoot, constants.APP_RESOURCES_FOLDER_NAME, this.$devicePlatformsConstants.Android, "src"];
 
 		return path.join(...resourcesPath);
 	}
