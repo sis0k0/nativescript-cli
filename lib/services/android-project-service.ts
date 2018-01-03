@@ -10,8 +10,8 @@ import { Configurations } from "../common/constants";
 import { SpawnOptions } from "child_process";
 
 export class AndroidProjectService extends projectServiceBaseLib.PlatformProjectServiceBase implements IPlatformProjectService {
-	private static VALUES_DIRNAME = "values";
-	private static VALUES_VERSION_DIRNAME_PREFIX = AndroidProjectService.VALUES_DIRNAME + "-v";
+	// private static VALUES_DIRNAME = "values";
+	// private static VALUES_VERSION_DIRNAME_PREFIX = AndroidProjectService.VALUES_DIRNAME + "-v";
 	private static ANDROID_PLATFORM_NAME = "android";
 	private static MIN_RUNTIME_VERSION_WITH_GRADLE = "1.5.0";
 	private static REQUIRED_DEV_DEPENDENCIES = [
@@ -48,6 +48,10 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		if (!projectData && !this._platformData) {
 			throw new Error("First call of getPlatformData without providing projectData.");
 		}
+
+		const platformVersion = this.$projectDataService.getNSValue(projectData.projectDir, constants.TNS_ANDROID_RUNTIME_NAME).version;
+		const versionIsPrior4 = this.isPrior4(platformVersion);
+
 		if (projectData && projectData.platformsDir) {
 			const projectRoot = path.join(projectData.platformsDir, AndroidProjectService.ANDROID_PLATFORM_NAME);
 			if (this.isAndroidStudioCompatibleTemplate(projectData)) {
@@ -60,7 +64,9 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 			}
 			appDestinationDirectoryArr.push(constants.SRC_DIR, constants.MAIN_DIR, constants.ASSETS_DIR);
 
-			const configurationsDirectoryArr = [projectData.appResourcesDirectoryPath, "Android", constants.SRC_DIR, constants.MAIN_DIR, constants.MANIFEST_FILE_NAME];
+			const configurationsDirectoryArr = versionIsPrior4 ?
+				[projectData.projectDir, constants.APP_FOLDER_NAME, constants.APP_RESOURCES_FOLDER_NAME, "Android", constants.MANIFEST_FILE_NAME] :
+				[projectData.appResourcesDirectoryPath, "Android", constants.SRC_DIR, constants.MAIN_DIR, constants.MANIFEST_FILE_NAME];
 
 			const deviceBuildOutputArr = [projectRoot];
 			if (this.isAndroidStudioTemplate) {
@@ -72,6 +78,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 			const packageName = this.getProjectNameFromId(projectData);
 
 			this._platformData = {
+				isPrior4: versionIsPrior4,
 				frameworkPackageName: constants.TNS_ANDROID_RUNTIME_NAME,
 				normalizedPlatformName: "Android",
 				appDestinationDirectoryPath: path.join(...appDestinationDirectoryArr),
@@ -101,6 +108,19 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 		return this._platformData;
 	}
 
+	private isPrior4(version: string) {
+		if (version === 'next' || version === 'rc' || version === 'latest') {
+			version = '4.0.0'; // anything 4.0.0 and higher is alright
+		}
+
+		if (version) {
+			const normalizedPlatformVersion = `${semver.major(version)}.${semver.minor(version)}.0`;
+			return semver.lt(normalizedPlatformVersion, "4.0.0");
+		} else {
+			this.$errors.failWithoutHelp("tns-android not present in the package.json");
+		}
+	}
+
 	public getPlatformProjectService(): IPlatformProjectService {
 		return this;
 	}
@@ -119,12 +139,13 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 
 	public getAppResourcesDestinationDirectoryPath(projectData: IProjectData, frameworkVersion?: string): string {
 		if (this.canUseGradle(projectData, frameworkVersion)) {
-			const resourcePath: string[] = [/* constants.SRC_DIR */];
+			const platformData = this.getPlatformData(projectData);
+
+			const resourcePath: string[] = platformData.isPrior4 ? [constants.SRC_DIR, constants.MAIN_DIR, constants.RESOURCES_DIR] : [];
 			if (this.isAndroidStudioTemplate) {
 				resourcePath.unshift(constants.APP_FOLDER_NAME);
 			}
-
-			return path.join(this.getPlatformData(projectData).projectRoot, ...resourcePath);
+			return path.join(platformData.projectRoot, ...resourcePath);
 
 		}
 
@@ -189,7 +210,8 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 			this.copy(this.getPlatformData(projectData).projectRoot, frameworkDir, "gradlew gradlew.bat", "-f");
 		}
 
-		this.cleanResValues(targetSdkVersion, projectData, frameworkVersion);
+		// todo: pete: why is this here
+		// this.cleanResValues(targetSdkVersion, projectData, frameworkVersion);
 
 		const npmConfig: INodePackageManagerInstallOptions = {
 			save: true,
@@ -219,53 +241,65 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 				}
 
 				if (!semver.satisfies(dependencyVersionInProject || cleanedVerson, dependency.version)) {
-					this.$errors.failWithoutHelp(`Your project have installed ${dependency.name} version ${cleanedVerson} but Android platform requires version ${dependency.version}.`);
+					this.$errors.failWithoutHelp(`Your project has installed ${dependency.name} version ${cleanedVerson} but Android platform requires version ${dependency.version}.`);
 				}
 			}
 		}
 	}
 
-	private cleanResValues(targetSdkVersion: number, projectData: IProjectData, frameworkVersion: string): void {
-		const resDestinationDir = this.getAppResourcesDestinationDirectoryPath(projectData, frameworkVersion);
-		const directoriesInResFolder = this.$fs.readDirectory(resDestinationDir);
-		const directoriesToClean = directoriesInResFolder
-			.map(dir => {
-				return {
-					dirName: dir,
-					sdkNum: parseInt(dir.substr(AndroidProjectService.VALUES_VERSION_DIRNAME_PREFIX.length))
-				};
-			})
-			.filter(dir => dir.dirName.match(AndroidProjectService.VALUES_VERSION_DIRNAME_PREFIX)
-				&& dir.sdkNum
-				&& (!targetSdkVersion || (targetSdkVersion < dir.sdkNum)))
-			.map(dir => path.join(resDestinationDir, dir.dirName));
+	// private cleanResValues(targetSdkVersion: number, projectData: IProjectData, frameworkVersion: string): void {
+	// 	const resDestinationDir = this.getAppResourcesDestinationDirectoryPath(projectData, frameworkVersion);
+	// 	const directoriesInResFolder = this.$fs.readDirectory(resDestinationDir);
+	// 	const directoriesToClean = directoriesInResFolder
+	// 		.map(dir => {
+	// 			return {
+	// 				dirName: dir,
+	// 				sdkNum: parseInt(dir.substr(AndroidProjectService.VALUES_VERSION_DIRNAME_PREFIX.length))
+	// 			};
+	// 		})
+	// 		.filter(dir => dir.dirName.match(AndroidProjectService.VALUES_VERSION_DIRNAME_PREFIX)
+	// 			&& dir.sdkNum
+	// 			&& (!targetSdkVersion || (targetSdkVersion < dir.sdkNum)))
+	// 		.map(dir => path.join(resDestinationDir, dir.dirName));
 
-		this.$logger.trace("Directories to clean:");
+	// 	this.$logger.trace("Directories to clean:");
 
-		this.$logger.trace(directoriesToClean);
+	// 	this.$logger.trace(directoriesToClean);
 
-		_.map(directoriesToClean, dir => this.$fs.deleteDirectory(dir));
-	}
+	// 	_.map(directoriesToClean, dir => this.$fs.deleteDirectory(dir));
+	// }
 
 	public async interpolateData(projectData: IProjectData, platformSpecificData: IPlatformSpecificData): Promise<void> {
 		// Interpolate the apilevel and package
 		this.interpolateConfigurationFile(projectData, platformSpecificData);
 
-		const stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), "src", "main", "res", 'values', 'strings.xml');
+		let stringsFilePath: string;
+		if (this.getPlatformData(projectData).isPrior4) {
+			stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), 'values', 'strings.xml');
+		} else {
+			stringsFilePath = path.join(this.getAppResourcesDestinationDirectoryPath(projectData), "src", "main", "res", 'values', 'strings.xml');
+		}
+
 		shell.sed('-i', /__NAME__/, projectData.projectName, stringsFilePath);
 		shell.sed('-i', /__TITLE_ACTIVITY__/, projectData.projectName, stringsFilePath);
 
 		const gradleSettingsFilePath = path.join(this.getPlatformData(projectData).projectRoot, "settings.gradle");
 		shell.sed('-i', /__PROJECT_NAME__/, this.getProjectNameFromId(projectData), gradleSettingsFilePath);
 
-		// will replace applicationId in app/App_Resources/Android/app.gradle if it has not been edited by the user
-		const userAppGradleFilePath = path.join(projectData.appResourcesDirectoryPath, this.$devicePlatformsConstants.Android, "app.gradle");
+		let userAppGradleFilePath: string;
+		if (this.getPlatformData(projectData).isPrior4) {
+			userAppGradleFilePath = path.join(projectData.projectDir, constants.APP_RESOURCES_FOLDER_NAME, "Android", "app.gradle");
+		} else {
+			// will replace applicationId in app/App_Resources/Android/app.gradle if it has not been edited by the user
+			userAppGradleFilePath = path.join(projectData.appResourcesDirectoryPath, this.$devicePlatformsConstants.Android, "app.gradle");
 
-		try {
-			shell.sed('-i', /__PACKAGE__/, projectData.projectId, userAppGradleFilePath);
-		} catch (e) {
-			this.$logger.warn(`\n${e}.\nCheck if you're using an outdated template and update it.`);
+			try {
+				shell.sed('-i', /__PACKAGE__/, projectData.projectId, userAppGradleFilePath);
+			} catch (e) {
+				this.$logger.warn(`\n${e}.\nCheck if you're using an outdated template and update it.`);
+			}
 		}
+
 	}
 
 	public interpolateConfigurationFile(projectData: IProjectData, platformSpecificData: IPlatformSpecificData): void {

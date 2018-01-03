@@ -29,7 +29,7 @@ export class PreparePlatformJSService extends PreparePlatformService implements 
 			frameworkPackageNameData.template = customTemplateOptions.selectedTemplate;
 		}
 
-		this.$projectDataService.setNSValue(info.projectData.projectDir, info.platformData.frameworkPackageName, frameworkPackageNameData);
+		// this.$projectDataService.setNSValue(info.projectData.projectDir, info.platformData.frameworkPackageName, frameworkPackageNameData);
 	}
 
 	@hook('prepareJSApp')

@@ -242,6 +242,7 @@ interface ITrackPlatformAction extends IPlatform {
 }
 
 interface IPlatformData {
+	isPrior4?: boolean;
 	frameworkPackageName: string;
 	platformProjectService: IPlatformProjectService;
 	emulatorServices: Mobile.IEmulatorPlatformServices;
@@ -266,6 +267,7 @@ interface IPlatformsData {
 	platformsNames: string[];
 	getPlatformProjectService(platform: string): IPlatformProjectService;
 	getPlatformData(platform: string, projectData: IProjectData): IPlatformData;
+	getFrameworkName(platform: string): string;
 }
 
 interface IAppFilesUpdaterOptionsComposition {

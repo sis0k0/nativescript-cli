@@ -76,8 +76,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 	}
 
 	private getCurrentPlatformVersion(platform: string, projectData: IProjectData): string {
-		const platformData = this.$platformsData.getPlatformData(platform, projectData);
-		const currentPlatformData: any = this.$projectDataService.getNSValue(projectData.projectDir, platformData.frameworkPackageName);
+		const currentPlatformData: any = this.$projectDataService.getNSValue(projectData.projectDir, this.$platformsData.getFrameworkName(platform));
 		let version: string;
 		if (currentPlatformData && currentPlatformData[constants.VERSION_STRING]) {
 			version = currentPlatformData[constants.VERSION_STRING];
@@ -91,7 +90,6 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		const platform = data[0].toLowerCase();
 		let version = data[1];
 
-		const platformData = this.$platformsData.getPlatformData(platform, projectData);
 
 		if (version === undefined) {
 			version = this.getCurrentPlatformVersion(platform, projectData);
@@ -99,7 +97,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 
 		// Log the values for project
 		this.$logger.trace("Creating NativeScript project for the %s platform", platform);
-		this.$logger.trace("Path: %s", platformData.projectRoot);
+		// this.$logger.trace("Path: %s", platformData.projectRoot);
 		this.$logger.trace("Package: %s", projectData.projectId);
 		this.$logger.trace("Name: %s", projectData.projectName);
 
@@ -112,7 +110,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		};
 
 		if (!frameworkPath) {
-			packageToInstall = platformData.frameworkPackageName;
+			packageToInstall = "tns-android";/* platformData.frameworkPackageName */;
 			npmOptions["version"] = version;
 		}
 
@@ -129,7 +127,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 			if (frameworkJsonContent && frameworkJsonContent.version) {
 				version = frameworkJsonContent.version;
 			}
-			
+
 			let appDirectoryPath = projectData.projectDir;
 
 			let migrationVersion = version;
@@ -142,6 +140,10 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 				await this.$projectV4MigrationService.migrate(appDirectoryPath);
 			}
 	
+			this.$projectDataService.setNSValue(projectData.projectDir, "tns-android", { version: version });
+
+			const platformData = this.$platformsData.getPlatformData(platform, projectData);
+
 			const coreModuleName = await this.addPlatformCore(platformData, frameworkDir, platformTemplate, projectData, config, nativePrepare);
 			await this.$npm.uninstall(coreModuleName, { save: true }, projectData.projectDir);
 		} catch (err) {

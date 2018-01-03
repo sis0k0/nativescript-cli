@@ -7,6 +7,9 @@ export class ProjectV4MigrationService implements IProjectV4MigrationService {
     shouldMigrate(versionString: string, applicationRoot: string): boolean {
         return this.$fs.exists(path.join(applicationRoot, "app", "App_Resources")) && semver.gte(versionString, "4.0.0");
     }
+    hasMigrated(applicationRoot: string): boolean {
+        return this.$fs.exists(path.join(applicationRoot, "App_Resources"));
+    }
     async migrate(applicationRoot: string): Promise<void> {
         const originalAppResources = path.join(applicationRoot, "app", "App_Resources", "Android");
         const destination = path.join(applicationRoot, "App_Resources");

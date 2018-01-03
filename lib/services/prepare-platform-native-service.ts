@@ -64,12 +64,23 @@ export class PreparePlatformNativeService extends PreparePlatformService impleme
 		const appResourcesDestinationPath = platformData.platformProjectService.getAppResourcesDestinationDirectoryPath(projectData);
 		// app_resources directory path
 		const appResourcesSourcePath = platformData.platformProjectService.getAppResourcesSourceDirectoryPath(path.resolve(path.join(platformData.projectRoot, "..", "..")));
-
-		if (this.$fs.exists(appResourcesSourcePath)) {
-			platformData.platformProjectService.prepareAppResources(appResourcesDestinationPath, projectData);
-
-			this.$fs.ensureDirectoryExists(appResourcesDestinationPath);
-			shell.cp("-Rf", appResourcesSourcePath, appResourcesDestinationPath);
+		if (platformData.isPrior4) {
+			const appDestinationDirectoryPath = path.join(platformData.appDestinationDirectoryPath, constants.APP_FOLDER_NAME);
+			const appResourcesDirectoryPath = path.join(appDestinationDirectoryPath, constants.APP_RESOURCES_FOLDER_NAME);
+			if (this.$fs.exists(appResourcesDirectoryPath)) {
+				platformData.platformProjectService.prepareAppResources(appResourcesDirectoryPath, projectData);
+				const appResourcesDestination = platformData.platformProjectService.getAppResourcesDestinationDirectoryPath(projectData);
+				this.$fs.ensureDirectoryExists(appResourcesDestination);
+				shell.cp("-Rf", path.join(appResourcesDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);
+				this.$fs.deleteDirectory(appResourcesDirectoryPath);
+			}
+		} else {
+			if (this.$fs.exists(appResourcesSourcePath)) {
+				platformData.platformProjectService.prepareAppResources(appResourcesDestinationPath, projectData);
+	
+				this.$fs.ensureDirectoryExists(appResourcesDestinationPath);
+				shell.cp("-Rf", appResourcesSourcePath, appResourcesDestinationPath);
+			}
 		}
 	}
 

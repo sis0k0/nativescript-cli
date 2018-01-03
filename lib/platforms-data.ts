@@ -24,6 +24,10 @@ export class PlatformsData implements IPlatformsData {
 		return platformData;
 	}
 
+	public getFrameworkName(platform: string): string {
+		return "tns-" + platform.toLowerCase();
+	}
+
 	public getPlatformProjectService(platformKey: string): IPlatformProjectService {
 		return this.platformsData[platformKey].getPlatformProjectService();
 	}

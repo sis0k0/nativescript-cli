@@ -434,6 +434,7 @@ interface IInfoService {
 
 interface IProjectV4MigrationService {
 	shouldMigrate(versionString: string, applicationRoot: string): boolean;
+	hasMigrated(applicationRoot: string): boolean;
 	migrate(applicationRoot: string): Promise<void>;
 }
 
