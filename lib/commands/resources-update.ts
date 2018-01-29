@@ -13,7 +13,8 @@ export class ResourcesUpdateCommand implements ICommand {
 
     public async canExecute(args: string[]): Promise<boolean> {
         if (!args || args.length === 0) {
-            this.$errors.failWithoutHelp("No platform specified. Please specify a platform to update. Valid platforms are: 'android'");
+            // Command defaults to migrating the Android App_Resources, unless explicitly specified
+            args = ["android"];
         }
 
         for (const platform of args) {
