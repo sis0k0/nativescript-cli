@@ -776,3 +776,15 @@ export class EmulatorPlatformService implements IEmulatorPlatformService {
 		return Promise.resolve();
 	}
 }
+
+export class AndroidResourcesV4MigrationServiceStub implements IAndroidResourcesV4MigrationService {
+	canMigrate(platformString: string): boolean {
+		return true;
+	}
+	hasMigrated(appResourcesDir: string): boolean {
+		return false;
+	}
+	migrate(appResourcesDir: string): Promise<void> {
+		return Promise.resolve();
+	}
+}

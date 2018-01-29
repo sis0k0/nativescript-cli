@@ -102,6 +102,9 @@ $injector.requireCommand("init", "./commands/init");
 $injector.require("infoService", "./services/info-service");
 $injector.requireCommand("info", "./commands/info");
 
+$injector.require("androidResourcesV4MigrationService", "./services/project-v4-migration-service");
+$injector.requireCommand("resources-update", "./commands/resources-update");
+
 $injector.require("androidToolsInfo", "./android-tools-info");
 $injector.require("devicePathProvider", "./device-path-provider");
 

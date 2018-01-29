@@ -103,6 +103,7 @@ function createTestInjector() {
 			message: (): void => undefined
 		})
 	});
+	testInjector.register("androidResourcesV4MigrationService", stubs.AndroidResourcesV4MigrationServiceStub);
 
 	return testInjector;
 }

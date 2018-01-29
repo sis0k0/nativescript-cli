@@ -112,6 +112,8 @@ function createTestInjector() {
 	});
 	testInjector.register("httpClient", {});
 	testInjector.register("extensibilityService", {});
+	testInjector.register("androidResourcesV4MigrationService", stubs.AndroidResourcesV4MigrationServiceStub);
+
 	return testInjector;
 }
 

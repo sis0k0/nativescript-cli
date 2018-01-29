@@ -10,7 +10,8 @@ export class PreparePlatformNativeService extends PreparePlatformService impleme
 		$hooksService: IHooksService,
 		private $nodeModulesBuilder: INodeModulesBuilder,
 		private $pluginsService: IPluginsService,
-		private $projectChangesService: IProjectChangesService) {
+		private $projectChangesService: IProjectChangesService,
+		private $androidResourcesV4MigrationService: IAndroidResourcesV4MigrationService) {
 		super($fs, $hooksService, $xmlValidator);
 	}
 
@@ -62,13 +63,36 @@ export class PreparePlatformNativeService extends PreparePlatformService impleme
 
 	private copyAppResources(platformData: IPlatformData, projectData: IProjectData): void {
 		const appDestinationDirectoryPath = path.join(platformData.appDestinationDirectoryPath, constants.APP_FOLDER_NAME);
-		const appResourcesDirectoryPath = path.join(appDestinationDirectoryPath, constants.APP_RESOURCES_FOLDER_NAME);
-		if (this.$fs.exists(appResourcesDirectoryPath)) {
-			platformData.platformProjectService.prepareAppResources(appResourcesDirectoryPath, projectData);
+		const appResourcesDestinationDirectoryPath = path.join(appDestinationDirectoryPath, constants.APP_RESOURCES_FOLDER_NAME);
+		if (this.$fs.exists(appResourcesDestinationDirectoryPath)) {
+			platformData.platformProjectService.prepareAppResources(appResourcesDestinationDirectoryPath, projectData);
 			const appResourcesDestination = platformData.platformProjectService.getAppResourcesDestinationDirectoryPath(projectData);
 			this.$fs.ensureDirectoryExists(appResourcesDestination);
-			shell.cp("-Rf", path.join(appResourcesDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);
-			this.$fs.deleteDirectory(appResourcesDirectoryPath);
+
+			if (platformData.normalizedPlatformName.toLowerCase() === "android") {
+				const appResourcesDirectoryPath = projectData.getAppResourcesDirectoryPath();
+				const appResourcesDirStructureHasMigrated = this.$androidResourcesV4MigrationService.hasMigrated(appResourcesDirectoryPath);
+				const appResourcesAndroid = path.join(appResourcesDirectoryPath, platformData.normalizedPlatformName);
+
+				if (appResourcesDirStructureHasMigrated) {
+					shell.cp("-Rf", path.join(appResourcesAndroid, "src", "main"), appResourcesDestination);
+
+					return;
+				}
+
+				// https://github.com/NativeScript/android-runtime/issues/899
+				// App_Resources/Android/libs is reserved to user's aars and jars, but they should not be copied as resources
+				shell.cp("-Rf", path.join(appResourcesDestinationDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);
+				shell.rm("-Rf", path.join(appResourcesDestination, "libs"));
+
+				this.$fs.deleteDirectory(appResourcesDestinationDirectoryPath);
+
+				return;
+			}
+
+			shell.cp("-Rf", path.join(appResourcesDestinationDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);
+
+			this.$fs.deleteDirectory(appResourcesDestinationDirectoryPath);
 		}
 	}
 
