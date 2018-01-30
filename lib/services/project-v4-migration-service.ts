@@ -55,7 +55,6 @@ export class ProjectV4MigrationService implements IProjectV4MigrationService {
 
         this.$logger.out(`Successfully updated your project's App_Resources/Android directory structure.\nThe previous version of App_Resources/Android has been renamed to App_Resources/${ProjectV4MigrationService.ANDROID_DIR_OLD}`);
     }
-
 }
 
 $injector.register("projectV4MigrationService", ProjectV4MigrationService);
