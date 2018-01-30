@@ -72,12 +72,22 @@ export class PreparePlatformNativeService extends PreparePlatformService impleme
 			if (platformData.normalizedPlatformName.toLowerCase() === "android") {
 				const appResourcesDirectoryPath = projectData.getAppResourcesDirectoryPath();
 				const appResourcesDirStructureHasMigrated = this.$projectV4MigrationService.hasMigrated(appResourcesDirectoryPath);
+				const appResourcesAndroid = path.join(appResourcesDirectoryPath, platformData.normalizedPlatformName);
 
 				if (appResourcesDirStructureHasMigrated) {
-					shell.cp("-Rf", path.join(appResourcesDirectoryPath, platformData.normalizedPlatformName, "src", "main"), appResourcesDestination);
+					shell.cp("-Rf", path.join(appResourcesAndroid, "src", "main"), appResourcesDestination);
 
 					return;
 				}
+
+				// https://github.com/NativeScript/android-runtime/issues/899
+				// App_Resources/Android/libs is reserved to user's aars and jars, but they should not be copied as resources
+				shell.cp("-Rf", path.join(appResourcesDestinationDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);
+				shell.rm("-Rf", path.join(appResourcesDestination, "libs"));
+
+				this.$fs.deleteDirectory(appResourcesDestinationDirectoryPath);
+
+				return;
 			}
 
 			shell.cp("-Rf", path.join(appResourcesDestinationDirectoryPath, platformData.normalizedPlatformName, "*"), appResourcesDestination);

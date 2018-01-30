@@ -76,6 +76,7 @@ function createTestInjector(): IInjector {
 		}
 	});
 	testInjector.register("settingsService", SettingsService);
+	testInjector.register("projectV4MigrationService", stubs.ProjectV4MigrationServiceStub);
 
 	return testInjector;
 }
