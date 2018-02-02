@@ -1270,7 +1270,7 @@ We will now place an empty obsolete compatability white screen LauncScreen.xib f
 	}
 
 	private getBuildXCConfigFilePath(projectData: IProjectData): string {
-		const buildXCConfig = path.join(projectData.getAppResourcesDirectoryPath(),
+		const buildXCConfig = path.join(projectData.appResourcesDirectoryPath,
 			this.getPlatformData(projectData).normalizedPlatformName, "build.xcconfig");
 		return buildXCConfig;
 	}
@@ -1332,7 +1332,7 @@ We will now place an empty obsolete compatability white screen LauncScreen.xib f
 				const choicePersist = await this.$prompter.promptForChoice("Do you want to make teamId: " + teamId + " a persistent choice for your app?", choicesPersist);
 				switch (choicesPersist.indexOf(choicePersist)) {
 					case 0:
-						const xcconfigFile = path.join(projectData.getAppResourcesDirectoryPath(), this.getPlatformData(projectData).normalizedPlatformName, "build.xcconfig");
+						const xcconfigFile = path.join(projectData.appResourcesDirectoryPath, this.getPlatformData(projectData).normalizedPlatformName, "build.xcconfig");
 						this.$fs.appendFile(xcconfigFile, "\nDEVELOPMENT_TEAM = " + teamId + "\n");
 						break;
 					case 1:
