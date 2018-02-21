@@ -78,6 +78,16 @@ interface IOptionalOutputPath {
 }
 
 /**
+ * Describes action used whenever building a project.
+ */
+interface IBuildAction {
+	/**
+	 * @returns {Promise<string>} Path to build artifact (.ipa, .apk or .zip).
+	 */
+	(): Promise<string>;
+}
+
+/**
  * Describes information for LiveSync on a device.
  */
 interface ILiveSyncDeviceInfo extends IOptionalOutputPath, IOptionalDebuggingOptions {
@@ -88,9 +98,8 @@ interface ILiveSyncDeviceInfo extends IOptionalOutputPath, IOptionalDebuggingOpt
 
 	/**
 	 * Action that will rebuild the application. The action must return a Promise, which is resolved with at path to build artifact.
-	 * @returns {Promise<string>} Path to build artifact (.ipa, .apk or .zip).
 	 */
-	buildAction: () => Promise<string>;
+	buildAction: IBuildAction;
 
 	/**
 	 * Whether to skip preparing the native platform.
@@ -346,14 +355,34 @@ interface IDevicePathProvider {
 	getDeviceSyncZipPath(device: Mobile.IDevice): string;
 }
 
+/**
+ * Describes a helper DTO interface.
+ */
+interface IOptionalBuildActionsComposition {
+	/**
+	 * A map with key deviceIdentifier and value - the corresponding build action.
+	 */
+	buildActions?: IDictionary<IBuildAction>;
+}
+
+/**
+ * Describes additional options, that can be passed to LiveSyncCommandHelper.
+ */
+interface ILiveSyncCommandHelperAdditionalOptions extends IOptionalBuildActionsComposition {
+	/**
+	 * A map representing devices which have debugging enabled initially.
+	 */
+	deviceDebugMap?: IDictionary<boolean>;
+}
+
 interface ILiveSyncCommandHelper {
 	/**
 	 * Method sets up configuration, before calling livesync and expects that devices are already discovered.
 	 * @param {Mobile.IDevice[]} devices List of discovered devices
 	 * @param {string} platform The platform for which the livesync will be ran
-	 * @param {IDictionary<boolean>} deviceDebugMap @optional A map representing devices which have debugging enabled initially.
+	 * @param {ILiveSyncCommandHelperAdditionalOptions} additionalOptions @optional Additional options to control LiveSync.
 	 * @returns {Promise<void>}
 	 */
-	executeLiveSyncOperation(devices: Mobile.IDevice[], platform: string, deviceDebugMap?: IDictionary<boolean>): Promise<void>;
+	executeLiveSyncOperation(devices: Mobile.IDevice[], platform: string, additionalOptions?: ILiveSyncCommandHelperAdditionalOptions): Promise<void>;
 	getPlatformsForOperation(platform: string): string[];
 }

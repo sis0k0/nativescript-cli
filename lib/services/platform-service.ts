@@ -465,6 +465,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 			platformTemplate: deployInfo.deployOptions.platformTemplate,
 			projectData: deployInfo.projectData,
 			config: deployInfo.config,
+			nativePrepare: deployInfo.nativePrepare,
 			env: deployInfo.env
 		});
 		const options: Mobile.IDevicesServicesInitializationOptions = {
@@ -485,15 +486,21 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 				keyStorePath: deployInfo.deployOptions.keyStorePath,
 				clean: deployInfo.deployOptions.clean
 			};
-			const shouldBuild = await this.shouldBuild(deployInfo.platform, deployInfo.projectData, buildConfig);
+
+			let installPackageFile: string;
+			const shouldBuild = await this.shouldBuild(deployInfo.platform, deployInfo.projectData, buildConfig, deployInfo.outputPath);
 			if (shouldBuild) {
-				await this.buildPlatform(deployInfo.platform, buildConfig, deployInfo.projectData);
+				if (deployInfo.buildActions && deployInfo.buildActions[device.deviceInfo.identifier]) {
+					installPackageFile = await deployInfo.buildActions[device.deviceInfo.identifier]();
+				} else {
+					await this.buildPlatform(deployInfo.platform, buildConfig, deployInfo.projectData);
+				}
 			} else {
 				this.$logger.out("Skipping package build. No changes detected on the native side. This will be fast!");
 			}
 
 			if (deployInfo.deployOptions.forceInstall || shouldBuild || (await this.shouldInstall(device, deployInfo.projectData))) {
-				await this.installApplication(device, buildConfig, deployInfo.projectData);
+				await this.installApplication(device, buildConfig, deployInfo.projectData, installPackageFile, deployInfo.outputPath);
 			} else {
 				this.$logger.out("Skipping install.");
 			}

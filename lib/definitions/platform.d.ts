@@ -329,10 +329,14 @@ interface IOptionalFilesToSync {
 	filesToSync?: string[];
 }
 
-interface IPreparePlatformInfoBase extends IPlatform, IAppFilesUpdaterOptionsComposition, IProjectDataComposition, IEnvOptions, IOptionalFilesToSync {
+interface IOptionalNativePrepareComposition {
 	nativePrepare?: INativePrepare;
 }
 
-interface IDeployPlatformInfo extends IPlatform, IAppFilesUpdaterOptionsComposition, IProjectDataComposition, IPlatformConfig, IEnvOptions {
+interface IPreparePlatformInfoBase extends IPlatform, IAppFilesUpdaterOptionsComposition, IProjectDataComposition, IEnvOptions, IOptionalFilesToSync, IOptionalNativePrepareComposition {
+
+}
+
+interface IDeployPlatformInfo extends IPlatform, IAppFilesUpdaterOptionsComposition, IProjectDataComposition, IPlatformConfig, IEnvOptions, IOptionalNativePrepareComposition, IOptionalOutputPath, IOptionalBuildActionsComposition {
 	deployOptions: IDeployPlatformOptions
 }

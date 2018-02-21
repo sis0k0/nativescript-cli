@@ -17,7 +17,7 @@ export class LiveSyncCommandHelper implements ILiveSyncCommandHelper {
 		return availablePlatforms;
 	}
 
-	public async executeLiveSyncOperation(devices: Mobile.IDevice[], platform: string, deviceDebugMap?: IDictionary<boolean>): Promise<void> {
+	public async executeLiveSyncOperation(devices: Mobile.IDevice[], platform: string, additionalOptions?: ILiveSyncCommandHelperAdditionalOptions): Promise<void> {
 		if (!devices || !devices.length) {
 			if (platform) {
 				this.$errors.failWithoutHelp("Unable to find applicable devices to execute operation. Ensure connected devices are trusted and try again.");
@@ -33,18 +33,19 @@ export class LiveSyncCommandHelper implements ILiveSyncCommandHelper {
 		}
 
 		if (this.$options.release) {
-			await this.runInReleaseMode(platform);
+			await this.runInReleaseMode(platform, additionalOptions);
 			return;
 		}
 
 		// Now let's take data for each device:
 		const deviceDescriptors: ILiveSyncDeviceInfo[] = devices
 			.map(d => {
-				const info: ILiveSyncDeviceInfo = {
-					identifier: d.deviceInfo.identifier,
-					platformSpecificOptions: this.$options,
+				let buildAction: IBuildAction;
 
-					buildAction: async (): Promise<string> => {
+				if (additionalOptions && additionalOptions.buildActions && additionalOptions.buildActions[d.deviceInfo.identifier]) {
+					buildAction = additionalOptions.buildActions[d.deviceInfo.identifier];
+				} else {
+					buildAction = async () => {
 						const buildConfig: IBuildConfig = {
 							buildForDevice: !d.isEmulator,
 							projectDir: this.$options.path,
@@ -62,8 +63,14 @@ export class LiveSyncCommandHelper implements ILiveSyncCommandHelper {
 						await this.$platformService.buildPlatform(d.deviceInfo.platform, buildConfig, this.$projectData);
 						const result = await this.$platformService.lastOutputPath(d.deviceInfo.platform, buildConfig, this.$projectData);
 						return result;
-					},
-					debugggingEnabled: deviceDebugMap && deviceDebugMap[d.deviceInfo.identifier],
+					};
+				}
+
+				const info: ILiveSyncDeviceInfo = {
+					identifier: d.deviceInfo.identifier,
+					platformSpecificOptions: this.$options,
+					buildAction,
+					debugggingEnabled: additionalOptions && additionalOptions.deviceDebugMap && additionalOptions.deviceDebugMap[d.deviceInfo.identifier],
 					debugOptions: this.$options
 				};
 
@@ -83,7 +90,7 @@ export class LiveSyncCommandHelper implements ILiveSyncCommandHelper {
 		await this.$liveSyncService.liveSync(deviceDescriptors, liveSyncInfo);
 	}
 
-	private async runInReleaseMode(platform: string): Promise<void> {
+	private async runInReleaseMode(platform: string, additionalOptions?: ILiveSyncCommandHelperAdditionalOptions): Promise<void> {
 		const runPlatformOptions: IRunPlatformOptions = {
 			device: this.$options.device,
 			emulator: this.$options.emulator,
@@ -104,6 +111,7 @@ export class LiveSyncCommandHelper implements ILiveSyncCommandHelper {
 					release: this.$options.release
 				},
 				deployOptions,
+				buildActions: additionalOptions.buildActions,
 				projectData: this.$projectData,
 				config: this.$options,
 				env: this.$options.env
