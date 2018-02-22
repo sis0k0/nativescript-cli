@@ -50,7 +50,8 @@ class LiveSyncServiceInheritor extends LiveSyncService {
 		$debugDataService: IDebugDataService,
 		$analyticsService: IAnalyticsService,
 		$usbLiveSyncService: DeprecatedUsbLiveSyncService,
-		$injector: IInjector) {
+		$injector: IInjector,
+		$platformsData: IPlatformsData) {
 
 		super(
 			$platformService,
@@ -69,7 +70,7 @@ class LiveSyncServiceInheritor extends LiveSyncService {
 			$analyticsService,
 			$usbLiveSyncService,
 			$injector,
-
+			$platformsData
 		);
 	}
 

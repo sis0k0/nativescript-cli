@@ -287,6 +287,13 @@ export class PlatformProjectServiceStub extends EventEmitter implements IPlatfor
 			fastLivesyncFileExtensions: []
 		};
 	}
+	prebuildNativePlugin(pluginName: string, platformsAndroidDirPath: string, aarOutputDir: string, tmpBuildDir: string): Promise<void> {
+		return Promise.resolve();
+	}
+
+	checkIfPluginsNeedBuild(projectData: IProjectData): Promise<Array<any>> {
+		return Promise.resolve([]);
+	}
 	getAppResourcesDestinationDirectoryPath(): string {
 		return "";
 	}

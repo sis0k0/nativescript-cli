@@ -281,14 +281,14 @@ export class IOSProjectService extends projectServiceBaseLib.PlatformProjectServ
 <dict>
     <key>method</key>
 	<string>${exportOptionsMethod}</string>`;
-	if (options && options.provision) {
-		plistTemplate += `    <key>provisioningProfiles</key>
+		if (options && options.provision) {
+			plistTemplate += `    <key>provisioningProfiles</key>
 <dict>
 	<key>${projectData.projectId}</key>
 	<string>${options.provision}</string>
 </dict>`;
-	}
-	plistTemplate += `
+		}
+		plistTemplate += `
     <key>uploadBitcode</key>
     <false/>
 </dict>
@@ -960,7 +960,7 @@ We will now place an empty obsolete compatability white screen LauncScreen.xib f
 		return Promise.resolve();
 	}
 
-	public async checkForChanges(changesInfo: IProjectChangesInfo, {provision, teamId}: IProjectChangesOptions, projectData: IProjectData): Promise<void> {
+	public async checkForChanges(changesInfo: IProjectChangesInfo, { provision, teamId }: IProjectChangesOptions, projectData: IProjectData): Promise<void> {
 		const hasProvision = provision !== undefined;
 		const hasTeamId = teamId !== undefined;
 		if (hasProvision || hasTeamId) {
@@ -1005,6 +1005,14 @@ We will now place an empty obsolete compatability white screen LauncScreen.xib f
 				changesInfo.signingChanged = true;
 			}
 		}
+	}
+
+	public async prebuildNativePlugin(pluginName: string, platformsAndroidDirPath: string, aarOutputDir: string, tmpBuildDir: string): Promise<void> {
+		Promise.resolve();
+	}
+
+	public async checkIfPluginsNeedBuild(projectData: IProjectData): Promise<Array<any>> {
+		return [];
 	}
 
 	private getAllLibsForPluginWithFileExtension(pluginData: IPluginData, fileExtension: string): string[] {
@@ -1351,7 +1359,7 @@ We will now place an empty obsolete compatability white screen LauncScreen.xib f
 
 	private validateApplicationIdentifier(projectData: IProjectData): void {
 		const infoPlistPath = path.join(projectData.appResourcesDirectoryPath, this.getPlatformData(projectData).normalizedPlatformName, this.getPlatformData(projectData).configurationFileName);
-		const mergedPlistPath =  this.getPlatformData(projectData).configurationFilePath;
+		const mergedPlistPath = this.getPlatformData(projectData).configurationFilePath;
 
 		if (!this.$fs.exists(infoPlistPath) || !this.$fs.exists(mergedPlistPath)) {
 			return;
