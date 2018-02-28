@@ -1,9 +1,8 @@
 const sourcemap = require("source-map");
 import * as path from "path";
 import { cache } from "../common/decorators";
-import * as iOSLogFilterBase from "../common/mobile/ios/ios-log-filter";
 
-export class IOSLogFilter extends iOSLogFilterBase.IOSLogFilter implements Mobile.IPlatformLogFilter {
+export class IOSLogFilter implements Mobile.IPlatformLogFilter {
 	// Used to trim the passed messages to a simpler output
 	// Example:
 	// This: "May 24 15:54:52 Dragons-iPhone NativeScript250(NativeScript)[356] <Notice>: CONSOLE ERROR file:///app/tns_modules/@angular/core/bundles/core.umd.js:3477:36: ORIGINAL STACKTRACE:"
@@ -16,20 +15,18 @@ export class IOSLogFilter extends iOSLogFilterBase.IOSLogFilter implements Mobil
 	private projectName: string;
 
 	private partialLine: string = null;
-	private loggingLevels: Mobile.ILoggingLevels;
 
-	constructor($loggingLevels: Mobile.ILoggingLevels,
+	constructor(
+		private $loggingLevels: Mobile.ILoggingLevels,
 		private $fs: IFileSystem,
 		private $projectData: IProjectData) {
-		super($loggingLevels);
 		this.projectName = this.$projectData.projectName;
-		this.loggingLevels = $loggingLevels;
 	}
 
 	public filterData(data: string, logLevel: string, pid?: string): string {
 		const specifiedLogLevel = (logLevel || '').toUpperCase();
 
-		if (specifiedLogLevel !== this.loggingLevels.info || !data) {
+		if (specifiedLogLevel !== this.$loggingLevels.info || !data) {
 			return data;
 		}
 

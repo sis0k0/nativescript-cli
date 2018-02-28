@@ -175,11 +175,6 @@ describe("iOSLogFilter", () => {
 	const infoLogLevel = "INFO";
 	const fullLogLevel = "FULL";
 
-	// beforeEach(() => {
-	// 	// testInjector = createTestInjector();
-	// 	// logFilter = testInjector.resolve(IOSLogFilter);
-	// });
-
 	describe("filterData", () => {
 		testData.forEach(data => {
 			it(`returns correct data when logLevel is ${fullLogLevel} on iOS ${data.version} and all data is passed at once`, () => {
@@ -223,7 +218,7 @@ describe("iOSLogFilter", () => {
 				data.originalDataArr.forEach((line, index) => {
 					const actualData = logFilter.filterData(line, infoLogLevel, null);
 					const expectedData = data.infoExpectedArr[index];
-					assert.equal(actualData && actualData.trim(), expectedData && expectedData);
+					assert.equal(actualData && actualData.trim(), expectedData);
 				});
 			});
 		});
