@@ -315,7 +315,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		}
 
 		const directoryPath = path.join(platformData.appDestinationDirectoryPath, constants.APP_FOLDER_NAME);
-		const excludedDirs = [constants.APP_RESOURCES_FOLDER_NAME];
+		const excludedDirs = [path.basename(projectData.appResourcesDirectoryPath)];
 		if (!changesInfo || !changesInfo.modulesChanged) {
 			excludedDirs.push(constants.TNS_MODULES_FOLDER_NAME);
 		}
