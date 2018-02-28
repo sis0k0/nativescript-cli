@@ -8,5 +8,5 @@ interface IBuildOptions {
 
 interface IAndroidPluginBuildService {
 	buildAar(options: IBuildOptions): Promise<boolean>;
-	migrateIncludeGradle(options: IBuildOptions): void;
+	migrateIncludeGradle(options: IBuildOptions): boolean;
 }
