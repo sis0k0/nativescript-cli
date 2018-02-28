@@ -110,6 +110,7 @@ function createTestInjector() {
 			message: (): void => undefined
 		})
 	});
+	testInjector.register("androidPluginBuildService", stubs.AndroidPluginBuildServiceStub);
 
 	return testInjector;
 }
