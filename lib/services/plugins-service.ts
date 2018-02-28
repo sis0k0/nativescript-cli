@@ -135,7 +135,7 @@ export class PluginsService implements IPluginsService {
 			return;
 		}
 
-		//prepare platform speciffic files, .map and .ts files
+		// prepare platform speciffic files, .map and .ts files
 		this.$projectFilesManager.processPlatformSpecificFiles(pluginScriptsDestinationPath, platform, projectFilesConfig);
 	}
 
