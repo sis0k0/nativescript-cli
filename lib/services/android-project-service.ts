@@ -436,7 +436,7 @@ export class AndroidProjectService extends projectServiceBaseLib.PlatformProject
 					tempPluginDirPath: path.join(projectData.platformsDir, "tempPlugin")
 				};
 
-				this.prebuildNativePlugin(options);
+				await this.prebuildNativePlugin(options);
 			}
 		}
 

@@ -191,7 +191,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 		const platformData = this.$platformsData.getPlatformData(platformInfo.platform, platformInfo.projectData);
 
 		const changesInfo = await this.initialPrepare(platformInfo.platform, platformData, platformInfo.appFilesUpdaterOptions, platformInfo.platformTemplate, platformInfo.projectData, platformInfo.config, platformInfo.nativePrepare, platformInfo);
-		const requiresNativePrepare = (!platformInfo.nativePrepare || !platformInfo.nativePrepare.skipNativePrepare) && changesInfo.nativePlatformStatus === constants.NativePlatformStatus.requiresPrepare;
+		const requiresNativePrepare = changesInfo.nativeChanged || (!platformInfo.nativePrepare || !platformInfo.nativePrepare.skipNativePrepare) && changesInfo.nativePlatformStatus === constants.NativePlatformStatus.requiresPrepare;
 
 		if (changesInfo.hasChanges || requiresNativePrepare) {
 			// Always clear up the app directory in platforms if `--bundle` value has changed in between builds or is passed in general
@@ -297,6 +297,7 @@ export class PlatformService extends EventEmitter implements IPlatformService {
 				platformSpecificData,
 				changesInfo,
 				filesToSync,
+				filesToRemove,
 				projectFilesConfig,
 				env
 			});
